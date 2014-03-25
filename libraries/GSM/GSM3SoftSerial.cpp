@@ -38,17 +38,23 @@ https://github.com/BlueVia/Official-Arduino
 #include <HardwareSerial.h>
 #include <Arduino.h>
 
-#if defined(__AVR_ATmega328P__) 
+#if defined(GSM_TX_PIN) && defined(GSM_RX_PIN)
+#define __TXPIN__ GSM_TX_PIN
+#define __RXPIN__ GSM_RX_PIN
+#elif defined(__AVR_ATmega328P__)
 #define __TXPIN__ 3
 #define __RXPIN__ 2
-#define __RXINT__ 3
 #elif defined(__AVR_ATmega2560__) || defined(__AVR_ATmega1280__)
 #define __TXPIN__ 3
 #define __RXPIN__ 10
-#define __RXINT__ 4
 #elif defined(__AVR_ATmega32U4__)
 #define __TXPIN__ 3
 #define __RXPIN__ 8
+#endif
+
+#if defined(GSM_RX_INT)
+#define __RXINT__ GSM_RX_INT
+#elif defined(__AVR_ATmega32U4__)
 #define __RXINT__ 3
 #endif
 
@@ -290,7 +296,7 @@ void GSM3SoftSerial::setRX()
   uint8_t port = digitalPinToPort(__RXPIN__);
   _receivePortRegister = portInputRegister(port);
 
-#ifdef  __AVR_ATmega32U4__
+#ifdef  __RXINT__
 //#define __RXINT__ 1
   attachInterrupt(__RXINT__, GSM3SoftSerial::handle_interrupt, FALLING);
 #endif

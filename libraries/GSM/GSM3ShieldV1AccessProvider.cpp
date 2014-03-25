@@ -1,7 +1,12 @@
 #include <GSM3ShieldV1AccessProvider.h>
 #include <Arduino.h>
 
+#ifdef GSM_RESET_PIN
+#define __RESETPIN__ GSM_RESET_PIN
+#else
 #define __RESETPIN__ 7
+#endif
+
 #define __TOUTSHUTDOWN__ 5000
 #define __TOUTMODEMCONFIGURATION__ 5000//equivalent to 30000 because of time in interrupt routine.
 #define __TOUTAT__ 1000
@@ -62,10 +67,18 @@ int GSM3ShieldV1AccessProvider::HWrestart()
 {
 
 	theGSM3ShieldV1ModemCore.setStatus(IDLE);
+
+#ifdef GSM_INVERT_RESET_PIN
+	digitalWrite(__RESETPIN__, LOW);
+	delay(12000);
+	digitalWrite(__RESETPIN__, HIGH);
+	delay(1000);
+#else
 	digitalWrite(__RESETPIN__, HIGH);
 	delay(12000);
 	digitalWrite(__RESETPIN__, LOW);
 	delay(1000);
+#endif
 	return 1; //configandwait(pin);
 }
 
@@ -74,10 +87,18 @@ int GSM3ShieldV1AccessProvider::HWstart()
 {
 
 	theGSM3ShieldV1ModemCore.setStatus(IDLE);
+
+#ifdef GSM_INVERT_RESET_PIN
+	digitalWrite(__RESETPIN__, LOW);
+	delay(2000);
+	digitalWrite(__RESETPIN__, HIGH);
+	//delay(1000);
+#else
 	digitalWrite(__RESETPIN__, HIGH);
 	delay(2000);
 	digitalWrite(__RESETPIN__, LOW);
 	//delay(1000);
+#endif
 
 	return 1; //configandwait(pin);
 }
@@ -277,9 +298,17 @@ bool GSM3ShieldV1AccessProvider::shutdown()
 	
 	// It makes no sense to have an asynchronous shutdown
 	pinMode(__RESETPIN__, OUTPUT);
+	
+#ifdef GSM_INVERT_RESET_PIN
+	digitalWrite(__RESETPIN__, LOW);
+	delay(1500);
+	digitalWrite(__RESETPIN__, HIGH);
+#else
 	digitalWrite(__RESETPIN__, HIGH);
 	delay(1500);
 	digitalWrite(__RESETPIN__, LOW);
+#endif
+	
 	theGSM3ShieldV1ModemCore.setStatus(IDLE);
 	theGSM3ShieldV1ModemCore.gss.close();
 	
